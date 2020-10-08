@@ -53,7 +53,7 @@ contract Split is Claimable {
      */
     function split(IERC20 token, uint256 amount) public {
         // calculate party share of amount
-        uint256 share = amount.mul(ratio).div(10**PRECISION);
+        uint256 share = amount.mul(ratio).div(PRECISION);
 
         // transfer share to party
         require(
@@ -70,5 +70,10 @@ contract Split is Claimable {
                 counterParty,
                 amount.sub(share)
             ), "insufficient balance");
+    }
+
+    function calculate(IERC20 token, uint256 amount) public returns (uint256, uint256) {
+        uint256 share = amount.mul(ratio).div(PRECISION);
+        return (share, amount.sub(share));
     }
 }
