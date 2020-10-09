@@ -46,7 +46,6 @@ describe('Split Contract', () => {
         .to.eq(parseToken('90'))
       expect(await token.balanceOf(accountTwo.address))
         .to.eq(parseToken('10'))
-      // await expect(registry.initialize(trustToken.address)).to.be.revertedWith('Already initialized')
     })
   })
 })
