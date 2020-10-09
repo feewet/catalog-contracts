@@ -1,3 +1,6 @@
-yarn install. 
-yarn build. 
-yarn test. 
+yarn install 
+  
+yarn build 
+  
+yarn test
+
