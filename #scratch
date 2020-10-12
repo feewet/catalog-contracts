@@ -1,0 +1,24 @@
+1. deploy artist token contract, split contract, staking contract, staking pool
+2. 
+3. 
+
+split(amount) {
+    //send to artist & pool
+
+    // caluclate amount
+    // transfer the amount
+    reward.transfer(msg.sender);
+
+    distributor
+}
+
+distributor
+
+how much DAI to mint 1 artist token
+
+distributor.tokenValue()
+
+token
+distributor
+split
+staking
