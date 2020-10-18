@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.6.10;
 
-import { ERC20, IERC20 } from './ERC20.sol';
-import { Claimable } from './Claimable.sol';
+import { ERC20, IERC20 } from '../ERC20.sol';
+import { Claimable } from '../Claimable.sol';
 
 interface IMintableBurnable is IERC20 {
     function mint(address account, uint256 amount) external;
@@ -28,7 +28,7 @@ contract MockDAI is IMintableBurnable, ERC20, Claimable {
     }
 
     // increase supply, only owner can mint
-    function mint(address account, uint256 amount) public override onlyOwner {
+    function mint(address account, uint256 amount) public override {
         _mint(account, amount);
     }
 

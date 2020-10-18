@@ -76,7 +76,7 @@ contract Split is Claimable {
             ), "insufficient balance");
     }
 
-    function calculate(IERC20 token, uint256 amount) public returns (uint256, uint256) {
+    function calculate(uint256 amount) public view returns (uint256, uint256) {
         uint256 share = amount.mul(ratio).div(PRECISION);
         return (share, amount.sub(share));
     }

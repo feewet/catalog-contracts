@@ -1,7 +1,8 @@
 {
   "include": [
     "scripts/**/*",
-    "tests/**/*"
+    "tests/**/*",
+    "scripts/**/*"
   ],
   "compilerOptions": {
     "resolveJsonModule": true,

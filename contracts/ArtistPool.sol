@@ -63,13 +63,13 @@ contract ArtistPool is IArtistPool, ERC20, Claimable {
     }
 
     function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
-        revert('transfers disabled');
-        //return super.transfer(recipient, amount);
+        //revert('transfers disabled');
+        return super.transfer(recipient, amount);
     }
 
     function transferFrom(address sender, address recipient, uint256 amount) public virtual override returns (bool) {
-        revert('transfers disabled');
-        //return super.transferFrom(sender, recipient, amount);
+        //revert('transfers disabled');
+        return super.transferFrom(sender, recipient, amount);
     }
 
     /**
@@ -101,8 +101,8 @@ contract ArtistPool is IArtistPool, ERC20, Claimable {
      * @dev withdraw reward tokens
      */
     function withdraw(uint256 amount) external override {
-        uint256 unstake = balanceOf(msg.sender);
-
+        // uint256 unstake = balanceOf(msg.sender);
+        if (amount >= 0 ) { /* TODO */ }
     }
 
     function claim() external override {
