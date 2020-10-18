@@ -5,6 +5,10 @@ import { IERC20 } from './ERC20.sol';
 import { Claimable } from './Claimable.sol';
 import { SafeMath } from "@openzeppelin/contracts/math/SafeMath.sol";
 
+interface ISplit {
+    function split(IERC20 token, uint256 amount) external;
+}
+
 /**
  * @title Split ERC20 Token payments
  * @dev split ratio * amount funds to party

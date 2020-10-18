@@ -5,13 +5,7 @@ import { ERC20, IERC20 } from './ERC20.sol';
 import { Claimable } from './Claimable.sol';
 import { SafeMath } from "@openzeppelin/contracts/math/SafeMath.sol";
 
-interface IDistributor {
-}
-
-interface IFarm {
-}
-
-interface IPoolToken {
+interface IArtistPool {
     function deposit(address account, uint256 amount) external;
     function withdraw(uint256 amount) external;
     function claim() external;
@@ -21,7 +15,7 @@ interface IPoolToken {
 /**
  * @dev staking pool - deposit stakeToken to earn rewardToken
  */
-contract PoolToken is IPoolToken, ERC20, Claimable {
+contract ArtistPool is IArtistPool, ERC20, Claimable {
     using SafeMath for uint256;
     IERC20 stakeToken;
     IERC20 rewardToken;
@@ -69,13 +63,13 @@ contract PoolToken is IPoolToken, ERC20, Claimable {
     }
 
     function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
-        return super.transfer(recipient, amount);
-        // TODO
+        revert('transfers disabled');
+        //return super.transfer(recipient, amount);
     }
 
     function transferFrom(address sender, address recipient, uint256 amount) public virtual override returns (bool) {
-        return super.transferFrom(sender, recipient, amount);
-        // TODO
+        revert('transfers disabled');
+        //return super.transferFrom(sender, recipient, amount);
     }
 
     /**
