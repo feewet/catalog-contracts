@@ -6,121 +6,141 @@ import { Claimable } from './Claimable.sol';
 import { SafeMath } from "@openzeppelin/contracts/math/SafeMath.sol";
 
 interface IArtistPool {
-    function deposit(address account, uint256 amount) external;
-    function withdraw(uint256 amount) external;
+    function stake(uint256 amount) external;
+    function unstake(uint256 amount) external;
     function claim() external;
-    function unclaimed(address account) external view returns (uint256);
+    function distribute(uint256 amount) external;
+    function pending(address account) external view returns (uint256);
 }
 
 /**
- * @dev staking pool - deposit stakeToken to earn rewardToken
+ * @title ArtistPool
+ * @dev Stake ArtistTokens and recieve rewards proportionally
  */
-contract ArtistPool is IArtistPool, ERC20, Claimable {
+contract ArtistPool is IArtistPool, Claimable {
     using SafeMath for uint256;
+    uint256 t = 0;
+    uint256 s = 0;
+    mapping(address => uint256) public stakes;
+    mapping(address => uint256) s0;
     IERC20 stakeToken;
     IERC20 rewardToken;
-    // cumulative rewards per stake
-    uint256 cumulative;
-    // claimed cumulative rewards for each account
-    mapping (address => uint256) claimed;
-    // default ratio of deposit to stake amount
-    uint256 constant DEFAULT_RATIO = 1000;
 
     constructor(IERC20 _stakeToken, IERC20 _rewardToken) public {
         stakeToken = _stakeToken;
         rewardToken = _rewardToken;
-        owner = msg.sender;
-    }
-
-    function name() public view override returns (string memory) {
-        return "Artist Pool";
-    }
-
-    function symbol() public view override returns (string memory) {
-        return "ARTIST-POOL";
-    }
-
-    function decimals() public view override returns (uint8) {
-        return 18;
     }
 
     /**
-     * @dev mint and calculate new claimed cumulative rewards
+     * @dev stake tokens from msg.sender
+     * accounts with existing stake withdraw stake & reward
+     * and deposit stake plus new amount
+     * @param amount amount to stake
      */
-    function mint(address account, uint256 amount) internal {
-        _mint(account, amount);
-        uint256 prior = balanceOf(account);
+    function stake(uint256 amount) public override {
+        stakeToken.transferFrom(msg.sender, address(this), amount);
 
-        // ((cumulative * amount) - (claimed * prior)) / (prior + amount)
-        claimed[msg.sender] = cumulative.mul(amount)
-            .sub(claimed[account].mul(prior))
-            .div(prior.sub(amount));
-    }
+        uint256 deposited;
+        uint256 reward;
 
-    function burn(address account, uint256 amount) internal {
-        _burn(account, amount);
-        // TODO
-    }
-
-    function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
-        //revert('transfers disabled');
-        return super.transfer(recipient, amount);
-    }
-
-    function transferFrom(address sender, address recipient, uint256 amount) public virtual override returns (bool) {
-        //revert('transfers disabled');
-        return super.transferFrom(sender, recipient, amount);
-    }
-
-    /**
-     * @dev deposit stake tokens & mint pool tokens
-     */
-    function deposit(address account, uint256 amount) external override {
-        require(stakeToken.transferFrom(account, address(this), amount));
-        // get balance of stake tokens
-        uint256 balance = stakeToken.balanceOf(address(this));
-        // get total stake
-        uint256 totalStake = totalSupply();
-
-        // calcualte stake for deposit amount
-        uint256 stake;
-        if (amount < balance) {
-            // stake = (amount * total) / (balance - amount)
-            stake = amount.mul(totalStake).div(balance.sub(amount));
+        if (stakes[msg.sender] > 0) {
+            (deposited, reward) = _withdraw(msg.sender);
+            rewardToken.transfer(msg.sender, reward);
         }
-        // first staker
+
+        deposited = deposited.add(amount);
+        _deposit(msg.sender, deposited);
+    }
+
+
+    /**
+     * @dev external function for unstaking
+     * If participant doesn't unstake full amount, re-deposit remaining
+     * Always withdraws full reward
+     * @param amount to unstake
+     */
+    function unstake(uint256 amount) public override {
+        require(stakes[msg.sender] > 0, "no stake");
+        require(stakes[msg.sender] >= amount, "insufficient stake");
+
+        (uint256 deposited, uint256 reward) = _withdraw(msg.sender);
+        
+        stakeToken.transfer(msg.sender, amount);
+
+        if (reward > 0) {
+            rewardToken.transfer(msg.sender, reward);
+        }
+
+        amount = deposited.sub(amount);
+
+        if (amount > 0) {
+            _deposit(msg.sender, amount);
+        }
+    }
+
+    /**
+     * @dev claiming is just unstaking zero tokens
+     * will unstake & re-stake, tranferring any awards
+     */
+    function claim() public override {
+        unstake(0);
+    }
+
+    /**
+     * @dev view function to calculate pending rewards
+     * @param account to get pending rewards for
+     * @return pending rewards
+     */
+    function pending(address account) public view override returns (uint256) {
+        uint256 deposited = stakes[account];
+        uint256 reward = deposited.mul(s.sub(s0[account]));
+        return reward;
+    }
+
+    /**
+     * @dev distribute rewardTokens to the pool
+     * @param amount of rewardTokens to distribute
+     */
+    function distribute(uint256 amount) public override {
+        rewardToken.transferFrom(msg.sender, address(this), amount);
+        _distribute(amount);
+    }
+
+    /**
+     * @dev add a new participant stake.
+     * @param account of depositor
+     * @param amount to deposit
+     */
+    function _deposit(address account, uint256 amount) internal {
+        stakes[account] = amount;
+        s0[account] = s;
+        t = t.add(amount);
+    }
+
+    /**
+     * @dev fan out reward to all participants
+     * @param r reward
+     */
+    function _distribute(uint256 r) internal {
+        if (t != 0) {
+            s = s.add(r.div(t));
+        }
         else {
-            require(totalStake == 0, "pool drained");
-            stake = amount.mul(DEFAULT_RATIO);
+            revert('pool drained');
         }
-        // mint stake for account
-        mint(account, stake);
     }
 
-    /**
-     * @dev withdraw reward tokens
+    /** 
+     * @dev return the participant’s entire stake deposit
+     * plus the accumulated reward.
+     * @param account to withdraw for
+     * @return (deposited, reward)
      */
-    function withdraw(uint256 amount) external override {
-        // uint256 unstake = balanceOf(msg.sender);
-        if (amount >= 0 ) { /* TODO */ }
-    }
-
-    function claim() external override {
-        uint256 stake = balanceOf(msg.sender);
-        if (stake == 0) {
-            return;
-        }
-
-        uint256 reward = unclaimed(msg.sender);
-        claimed[msg.sender] = cumulative;
-        require(rewardToken.transfer(msg.sender, reward), "pool out of reward");
-    }
-
-    /**
-     * @dev calculate reward amount for account
-     */
-    function unclaimed(address account) public view override returns (uint256) {
-        // unclaimed rewards = stake * (cumulative - claimed)
-        return balanceOf(account).mul(cumulative.sub(claimed[account]));
+    function _withdraw(address account) internal returns (uint256, uint256) {
+        uint256 deposited = stakes[account];
+        uint256 reward = deposited.mul(s.sub(s0[account]));
+        t = t.sub(deposited);
+        stakes[account] = 0;
+        return (deposited, reward);
     }
 }

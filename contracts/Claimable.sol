@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.6.10;
 
-
 /**
- * @title Clamable
+ * @title Claimable
  * @dev The Claimable contract is a copy of Ownable Contract by Zeppelin.
  * and provides basic authorization control functions. Inherits storage layout of
  * ProxyStorage.
