@@ -13,7 +13,7 @@ interface ISplit {
  * @title Split ERC20 Token payments
  * @dev split ratio * amount funds to party
  */
-contract Split is Claimable {
+contract Split is ISplit, Claimable {
     using SafeMath for uint256;
     address party;
     address counterParty;
@@ -55,7 +55,7 @@ contract Split is Claimable {
      * @dev split token between two parties using transferFrom
      * sender must approve smart contract to spend tokens
      */
-    function split(IERC20 token, uint256 amount) public {
+    function split(IERC20 token, uint256 amount) public override {
         // calculate party share of amount
         uint256 share = amount.mul(ratio).div(PRECISION);
 

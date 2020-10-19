@@ -11,6 +11,7 @@ interface IArtistPool {
     function claim() external;
     function distribute(uint256 amount) external;
     function pending(address account) external view returns (uint256);
+    function isEmpty() external view returns (bool);
 }
 
 /**
@@ -104,6 +105,10 @@ contract ArtistPool is IArtistPool, Claimable {
     function distribute(uint256 amount) public override {
         rewardToken.transferFrom(msg.sender, address(this), amount);
         _distribute(amount);
+    }
+
+    function isEmpty() public view override returns (bool) {
+        return t == 0;
     }
 
     /**
