@@ -1,5 +1,5 @@
 /**
- * ts-node scripts/deploy_truecurrency.ts "{private_key}" "{network}"
+ * ts-node scripts/deploy_catalog.ts "{private_key}" "{network}"
  */
 import { ethers, providers, utils } from 'ethers'
 import { MockCatalogFactory } from '../build/types/MockCatalogFactory'
