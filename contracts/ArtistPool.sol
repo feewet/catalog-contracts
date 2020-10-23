@@ -20,16 +20,18 @@ interface IArtistPool {
  */
 contract ArtistPool is IArtistPool, Claimable {
     using SafeMath for uint256;
-    uint256 t = 0;
-    uint256 s = 0;
+    uint256 t;
+    uint256 s;
     mapping(address => uint256) public stakes;
-    mapping(address => uint256) s0;
+    mapping(address => uint256) public s0;
     IERC20 stakeToken;
     IERC20 rewardToken;
 
     constructor(IERC20 _stakeToken, IERC20 _rewardToken) public {
         stakeToken = _stakeToken;
         rewardToken = _rewardToken;
+        t = 0;
+        s = 0;
     }
 
     /**
@@ -46,7 +48,10 @@ contract ArtistPool is IArtistPool, Claimable {
 
         if (stakes[msg.sender] > 0) {
             (deposited, reward) = _withdraw(msg.sender);
-            rewardToken.transfer(msg.sender, reward);
+            if (reward > 0) {
+                rewardToken.transfer(msg.sender, reward);
+            }
+            
         }
 
         deposited = deposited.add(amount);
@@ -61,21 +66,29 @@ contract ArtistPool is IArtistPool, Claimable {
      * @param amount to unstake
      */
     function unstake(uint256 amount) public override {
-        require(stakes[msg.sender] > 0, "no stake");
-        require(stakes[msg.sender] >= amount, "insufficient stake");
+        _unstake(msg.sender, amount);
+    }
 
-        (uint256 deposited, uint256 reward) = _withdraw(msg.sender);
-        
-        stakeToken.transfer(msg.sender, amount);
+    /**
+     * Internal unstake function
+     */
+    function _unstake(address account, uint256 amount) internal {
+        require(stakes[account] > 0, "no stake");
+        require(stakes[account] >= amount, "insufficient stake");
 
-        if (reward > 0) {
-            rewardToken.transfer(msg.sender, reward);
+        (uint256 deposited, uint256 reward) = _withdraw(account);
+        if (amount > 0) {
+            stakeToken.transfer(account, amount);
         }
 
-        amount = deposited.sub(amount);
+        if (reward > 0) {
+            rewardToken.transfer(account, reward);
+        }
+
+        uint256 deposit = deposited.sub(amount);
 
         if (amount > 0) {
-            _deposit(msg.sender, amount);
+            _deposit(account, deposit);
         }
     }
 
@@ -84,7 +97,7 @@ contract ArtistPool is IArtistPool, Claimable {
      * will unstake & re-stake, tranferring any awards
      */
     function claim() public override {
-        unstake(0);
+        _unstake(msg.sender, 0);
     }
 
     /**

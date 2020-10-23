@@ -10,35 +10,6 @@ interface IDistributor {
     function distribute(address account, uint256 amount) external;
 }
 
-/*
-contract Distributor is IDistributor, Claimable {
-    // total number of tokens distributed
-    uint256 distributed;
-
-    IERC20 token;
-
-    uint256 constant REWARD_FACTOR = 45e16; // 0.45
-
-    constructor(IERC20 _token) public {
-        token = _token;
-    }
-
-    function getReward(uint256 amount) external view override returns (uint256) {
-        // current - spend*(0.45)^(current/1000)
-        uint256 balance = token.balanceOf(address(this));
-
-        uint256 reward = balance.sub(
-            amount.mul(REWARD_FACTOR)**(balance.div(1000)));
-        return amount;
-    }
-
-    function distribute(address account, uint256 amount) external override {
-        token.transfer(account, amount);
-    }
-}
-*/
-
-
 contract Distributor is IDistributor {
     using SafeMath for uint256;
     IERC20 token;

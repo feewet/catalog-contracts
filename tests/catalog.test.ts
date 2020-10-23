@@ -116,8 +116,20 @@ describe('Catalog Contract', () => {
         expect(await dai.balanceOf(artistOne.address)).to.eq(parseEther('1100'))
         expect(await dai.balanceOf(pool.address)).to.eq(parseEther('0'))
       })
+      it('claim with one staker', async() => {
+        poolAccountOne = await pool.connect(accountOne)
+        await catalogAccountOne.split(artistOne.address, parseEther('100'))
+        await poolAccountOne.stake(parseEther('100'))
+        await catalogAccountTwo.split(artistOne.address, parseEther('100'))
+        expect(await dai.balanceOf(pool.address)).to.eq(parseEther('10'))
+        expect(await pool.stakes(accountOne.address)).to.eq(parseEther('100'))
+        await console.log(await pool.pending(accountOne.address))
+        await poolAccountOne.claim()
+        await console.log(await pool.pending(accountOne.address))
+        expect(await dai.balanceOf(accountOne.address)).to.eq(parseEther('910'))
+      })
 
-      it('second split with one staker claiming', async () => {
+      it('second split with staker', async () => {
         await catalogAccountOne.split(artistOne.address, parseEther('100'))
         await poolAccountOne.stake(parseEther('100'))
         await catalogAccountTwo.split(artistOne.address, parseEther('100'))
@@ -127,9 +139,6 @@ describe('Catalog Contract', () => {
         expect(await dai.balanceOf(accountTwo.address)).to.eq(parseEther('900'))
         expect(await dai.balanceOf(artistOne.address)).to.eq(parseEther('1190'))
         expect(await dai.balanceOf(pool.address)).to.eq(parseEther('10'))
-        await poolAccountOne.claim()
-        expect(await dai.balanceOf(pool.address)).to.eq(parseEther('10'))
-        expect(await dai.balanceOf(accountOne.address)).to.eq(parseEther('9'))
       })
       it('claim with two stakers and claims', async () => {
         await poolAccountOne.stake(parseEther('100'))

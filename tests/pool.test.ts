@@ -99,6 +99,16 @@ describe('Staking Contract', () => {
         expect(await dai.balanceOf(accountOne.address)).to.eq(parseEther('100'))
       })
 
+      describe('claim', () => {
+        beforeEach(async () => {
+          await poolAccountOne.claim()
+        })
+
+        it('claims reward', async () => {
+          expect(await dai.balanceOf(accountOne.address)).to.eq(parseEther('100'))
+        })
+      })
+
       describe('withdraw stake', () => {
 
         beforeEach(async () => {
