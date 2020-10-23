@@ -21,6 +21,7 @@ describe('Staking Contract', () => {
   let dai: MockDai
   let pool: ArtistPool
   let token: ArtistToken
+  let poolAccountOne: ArtistPool
 
   beforeEach(async () => {
     const freeDai = parseToken('1000')
@@ -36,6 +37,12 @@ describe('Staking Contract', () => {
     await token.mint(accountOne.address, freeDai)
     await token.mint(accountTwo.address, freeDai)
     await dai.mint(owner.address, freeDai);
+
+    // setup accounts
+    let tokenAccountOne = await token.connect(accountOne)
+    await tokenAccountOne.approve(pool.address, parseEther('100'))
+    poolAccountOne = await pool.connect(accountOne)
+    await poolAccountOne.stake(parseEther('100'))
   })
 
   // pool drained
@@ -44,13 +51,7 @@ describe('Staking Contract', () => {
   })
 
   describe('one staker', () => {
-    let poolAccountOne: ArtistPool
-
     beforeEach(async () => {
-      let tokenAccountOne = await token.connect(accountOne)
-      await tokenAccountOne.approve(pool.address, parseEther('100'))
-      poolAccountOne = await pool.connect(accountOne)
-      await poolAccountOne.stake(parseEther('100'))
     })
 
     it('can view stakes', async () => {
