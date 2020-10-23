@@ -29,7 +29,7 @@ contract Catalog is ICatalog, Claimable {
     IERC20 dai = IERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
 
     uint256 constant DEFAULT_RATIO = 1e17; // 0.1
-    uint256 constant SPLIT_PRECISION = 10e18; // 8 decimals
+    uint256 constant SPLIT_PRECISION = 1e18; // 8 decimals
     uint256 constant DEFAULT_SUPPLY = 100000000000000000000000; // 100,000
     uint256 constant INFINITE_APPROVAL = 2**256 - 1;
 
@@ -49,16 +49,13 @@ contract Catalog is ICatalog, Claimable {
 
             // distribute share to artist pool
             artist.pool.distribute(share);
-
+            
             // transfer remaining DAI to artist
             dai.transfer(artistAddress, amount.sub(share));
         }
 
-        // get artist token reward from distributor
-        uint256 reward = artist.distributor.getReward(amount);
-
         // transfer artist tokens to sender
-        artist.distributor.distribute(msg.sender, reward);
+        artist.distributor.distribute(msg.sender, amount);
     }
 
     /**
