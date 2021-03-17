@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.6.10;
 
+// Staking pool implementation of:
+// Scalable Reward Distribution on the Ethereum Blockchain
+// Bogdan Batog, Lucian Boca, Nick Johnson
+// https://uploads-ssl.webflow.com/5ad71ffeb79acc67c8bcdaba/5ad8d1193a40977462982470_scalable-reward-distribution-paper.pdf
+
 import { ERC20, IERC20 } from './ERC20.sol';
 import { Claimable } from './Claimable.sol';
 import { SafeMath } from "@openzeppelin/contracts/math/SafeMath.sol";
